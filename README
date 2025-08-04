@@ -8,7 +8,7 @@ With this tool, we bring a full month of reconciled transactions into E‑conomi
 
 ---
 
-## ✨ Features
+## Features
 
 * **Imports expenses from Revolut Business CSV exports**
 * **Processes receipts/attachments** and maps them to E‑conomic entries
@@ -19,7 +19,7 @@ With this tool, we bring a full month of reconciled transactions into E‑conomi
 
 ---
 
-## ⚙️ How It Works
+## How It Works
 
 The project is split into two files:
 
@@ -32,7 +32,7 @@ The project is split into two files:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Requirements
 
@@ -74,14 +74,14 @@ pip install requests keyring pillow
 
 ---
 
-## 🔐 Security Notes
+## Security Notes
 
 * **No hardcoded tokens**: You must save your own tokens to your OS keychain.
 * The `.exe` builds created with PyInstaller still contain your logic but not your secrets. Tokens remain safe in your OS credential store.
 
 ---
 
-## 📂 Project Status
+## Project Status
 
 * This is **not an official Performativ product**.
 * It’s a **hobby project**, built to scratch our own itch, and open‑sourced in case others find it useful.
@@ -89,7 +89,7 @@ pip install requests keyring pillow
 
 ---
 
-## 🙌 Contributing
+## Contributing
 
 Contributions are very welcome!
 Ideas include:
@@ -102,7 +102,7 @@ Fork, improve, and submit a PR — or open an issue if you want to discuss impro
 
 ---
 
-## 👤 Maintainer
+## Maintainer
 
 **Albert Fox**
 Founder & CEO, [Performativ](https://performativ.com)
