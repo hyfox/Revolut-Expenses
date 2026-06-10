@@ -163,7 +163,7 @@ def process_expenses(directory):
         data = [row for row in reader if row['Transaction status'] == 'COMPLETED']
     if not data:
         print("No COMPLETED transactions found in expenses.csv - nothing to do.")
-        return
+        return False
     # Add 'Has Attachment' column
     for row in data:
         row['Attachment'] = has_attachment(row['Expense ID'])
