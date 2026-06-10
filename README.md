@@ -34,38 +34,42 @@ The project is split into two files:
 
 ## Getting Started
 
-### Requirements
+### Option 1 — Windows, no Python required
+
+1. Download `RevolutExpenses-windows.zip` from the [latest release](../../releases/latest).
+2. Extract it anywhere (right‑click → *Extract All…*).
+3. Open the extracted folder and double‑click `RevolutExpenses.exe`.
+
+The app ships as a folder rather than a single `.exe` on purpose: a single‑file build has to unpack ~30 MB to a temp directory (and get rescanned by your antivirus) on every launch, which makes startup very slow.
+
+> Windows SmartScreen may warn about an unsigned executable the first time — choose *More info → Run anyway*.
+
+### Option 2 — Windows, run from source
+
+1. Install [Python 3.9+](https://www.python.org/downloads/) (tick **"Add python.exe to PATH"** during installation).
+2. Clone or download this repository.
+3. Double‑click **`run_windows.bat`**. It creates a local virtual environment, installs the dependencies, and launches the GUI.
+
+### Option 3 — Any platform, manual
 
 * Python 3.9+
-* Libraries:
-
-  * `requests`
-  * `tkinter` (usually comes with Python)
-  * `keyring`
-  * `pillow`
-
-Install dependencies with:
+* `tkinter` (usually bundled with Python)
 
 ```bash
-pip install requests keyring pillow
+pip install -r requirements.txt
+python Main.py
 ```
 
 ### Setup
 
-1. **Clone or download** this repository.
+1. Launch the app (see above).
 
-2. Run `Main.py` to launch the GUI:
-
-   ```bash
-   python Main.py
-   ```
-
-3. First step: **Save credentials**.
+2. First step: **Save credentials**.
    You’ll be asked for your E‑conomic API AppSecretToken and Agreement Grant Token. These are stored securely in your OS keychain.
 
-4. Export your **expenses.csv** from Revolut Business and place receipts in the same folder.
+3. Export your **expenses.csv** from Revolut Business and place receipts in the same folder.
 
-5. Click through the steps in the GUI to:
+4. Click through the steps in the GUI to:
 
    * Load your settings JSON
    * Process expenses

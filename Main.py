@@ -1,17 +1,17 @@
-import importlib, traceback
-import Economic
-import tkinter as tk
-from tkinter import ttk
-import threading, queue
-from tkinter import scrolledtext, filedialog, Tk
-from functools import partial
+import importlib
+import queue
 import sys
+import threading
+import traceback
 from datetime import datetime
-from PIL import Image, ImageTk
+
+import tkinter as tk
+from tkinter import ttk, scrolledtext, filedialog
+
+import Economic
 
 
 result_queue = queue.Queue()  # Create a queue to store function results
-gui_queue = queue.Queue()
 
 gui_queue = Economic.set_gui_queue()
 input_request_queue = Economic.create_request_queue()
@@ -22,24 +22,25 @@ execution_lock = threading.Lock()  # The lock to ensure single function executio
 
 Economic.input_request_queue = input_request_queue
 Economic.input_response_queue = input_response_queue
-directory_to_work_with =""
-
-# Example imports. Replace these with your actual modules and function names.
-# import app1
-# import app2
 
 def append_to_text_box(text):
     """Append text to the text box and scroll to the end."""
-    text_box.insert(tk.END, text)
-    text_box.see(tk.END)  # Scroll to the end
+    try:
+        text_box.insert(tk.END, text)
+        text_box.see(tk.END)  # Scroll to the end
+    except tk.TclError:
+        pass  # Window is being destroyed; nothing to display to anymore.
 
 class StdoutRedirector(object):
     def __init__(self, text_widget):
         self.text_space = text_widget
 
     def write(self, string):
-        self.text_space.insert(tk.END, string)
-        self.text_space.see(tk.END)  # Scroll to the end
+        try:
+            self.text_space.insert(tk.END, string)
+            self.text_space.see(tk.END)  # Scroll to the end
+        except tk.TclError:
+            pass  # Window is being destroyed; nothing to display to anymore.
 
     def flush(self):
         pass  # This is a method stub, needed for some functionalities that expect it in sys.stdout.
@@ -101,7 +102,9 @@ def execute_func(func, *args):
     for _, button in func_to_btn.items():  # Disable all buttons before execution
         button.config(state=tk.DISABLED)
     
-    thread = threading.Thread(target=threaded_function, args=args)
+    # Daemon thread: workers can be blocked waiting for user input, and must
+    # not keep the process alive after the window is closed.
+    thread = threading.Thread(target=threaded_function, args=args, daemon=True)
     thread.start()
 
 
@@ -130,21 +133,21 @@ def check_queue_update_ui():
 
         if request['label'] == 'ask_for_directory':
             try:
-                directory = tk.filedialog.askdirectory()
+                directory = filedialog.askdirectory()
                 request['response'].put(directory)
             except Exception as e:
                 request['response'].put(e)  # Send the exception back if necessary
                 append_to_text_box(str(e) + '\n')
         elif request['label'] == 'ask_for_file':
             try:
-                directory = tk.filedialog.askopenfilename()
+                directory = filedialog.askopenfilename()
                 request['response'].put(directory)
             except Exception as e:
                 request['response'].put(e)  # Send the exception back if necessary
                 append_to_text_box(str(e) + '\n')
         elif request['label'] == 'ask_to_open_file':
             try:
-                directory = tk.filedialog.askopenfile()
+                directory = filedialog.askopenfile()
                 request['response'].put(directory)
             except Exception as e:
                 request['response'].put(e)  # Send the exception back if necessary
@@ -168,29 +171,19 @@ def check_queue_update_ui():
             progressbar.step(value*100)
             request['response'].put(True)
             
-    root.after(1000, check_queue_update_ui)  # Check every second TODO: hcek om dette er rigtigt
+    root.after(1000, check_queue_update_ui)  # Check every second
 
-    
+
 def execute():
     user_input = input_field.get()
     input_response_queue.put(user_input)  # Place the user's input into the input_response_queue
-    #try:
-        #output = eval(user_input)
-        #append_to_text_box(str(user_input) + '\n' + str(output) + '\n')
-    #except Exception as e:
-        #append_to_text_box(str(e) + '\n')
     input_field.delete(0, tk.END)
-    
+
+
 def execute_func_with_logging(func, btn):
     btn.config(bg="yellow")
     append_to_text_box(f"{datetime.now()}: Executing {func.__name__}\n")
-    result = execute_func(func)
-    #if result is True:
-    #    btn.config(bg="green")
-    #    append_to_text_box(f"{datetime.now()}: Success\n")
-    #else:
-    #    btn.config(bg="red")
-    #    append_to_text_box(f"{datetime.now()}: Failed\n")
+    execute_func(func)
 
 root = tk.Tk()
 root.title('Revolut to Economic')
@@ -256,5 +249,11 @@ input_field.bind('<Return>', lambda event=None: execute())
 progressbar = ttk.Progressbar(right_frame)
 progressbar.pack(pady=10, fill=tk.X)
 
+def on_close():
+    # Worker threads are daemons, so destroying the window ends the process
+    # even if a worker is still blocked waiting for input.
+    root.destroy()
+
+root.protocol("WM_DELETE_WINDOW", on_close)
 root.after(1000, check_queue_update_ui)  # Start the periodic check after a second
-root.mainloop() 
+root.mainloop()
