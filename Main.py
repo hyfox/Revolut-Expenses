@@ -25,16 +25,22 @@ Economic.input_response_queue = input_response_queue
 
 def append_to_text_box(text):
     """Append text to the text box and scroll to the end."""
-    text_box.insert(tk.END, text)
-    text_box.see(tk.END)  # Scroll to the end
+    try:
+        text_box.insert(tk.END, text)
+        text_box.see(tk.END)  # Scroll to the end
+    except tk.TclError:
+        pass  # Window is being destroyed; nothing to display to anymore.
 
 class StdoutRedirector(object):
     def __init__(self, text_widget):
         self.text_space = text_widget
 
     def write(self, string):
-        self.text_space.insert(tk.END, string)
-        self.text_space.see(tk.END)  # Scroll to the end
+        try:
+            self.text_space.insert(tk.END, string)
+            self.text_space.see(tk.END)  # Scroll to the end
+        except tk.TclError:
+            pass  # Window is being destroyed; nothing to display to anymore.
 
     def flush(self):
         pass  # This is a method stub, needed for some functionalities that expect it in sys.stdout.
@@ -96,7 +102,9 @@ def execute_func(func, *args):
     for _, button in func_to_btn.items():  # Disable all buttons before execution
         button.config(state=tk.DISABLED)
     
-    thread = threading.Thread(target=threaded_function, args=args)
+    # Daemon thread: workers can be blocked waiting for user input, and must
+    # not keep the process alive after the window is closed.
+    thread = threading.Thread(target=threaded_function, args=args, daemon=True)
     thread.start()
 
 
@@ -241,5 +249,11 @@ input_field.bind('<Return>', lambda event=None: execute())
 progressbar = ttk.Progressbar(right_frame)
 progressbar.pack(pady=10, fill=tk.X)
 
+def on_close():
+    # Worker threads are daemons, so destroying the window ends the process
+    # even if a worker is still blocked waiting for input.
+    root.destroy()
+
+root.protocol("WM_DELETE_WINDOW", on_close)
 root.after(1000, check_queue_update_ui)  # Start the periodic check after a second
-root.mainloop() 
+root.mainloop()

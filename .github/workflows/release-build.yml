@@ -27,21 +27,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt pyinstaller
 
-      - name: Build EXE with PyInstaller
+      - name: Build with PyInstaller
         run: |
-          pyinstaller --onefile --windowed --name RevolutExpenses Main.py
-          dir dist
+          pyinstaller Main.spec
+          dir dist/RevolutExpenses
+
+      - name: Zip the build
+        run: Compress-Archive -Path dist/RevolutExpenses -DestinationPath RevolutExpenses-windows.zip
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: RevolutExpenses-windows
-          path: dist/RevolutExpenses.exe
+          path: RevolutExpenses-windows.zip
 
-      - name: Upload EXE to Release
+      - name: Upload zip to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/RevolutExpenses.exe
+          files: RevolutExpenses-windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

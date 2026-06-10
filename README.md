@@ -36,7 +36,11 @@ The project is split into two files:
 
 ### Option 1 — Windows, no Python required
 
-Download `RevolutExpenses.exe` from the [latest release](../../releases/latest) and double‑click it. That's it.
+1. Download `RevolutExpenses-windows.zip` from the [latest release](../../releases/latest).
+2. Extract it anywhere (right‑click → *Extract All…*).
+3. Open the extracted folder and double‑click `RevolutExpenses.exe`.
+
+The app ships as a folder rather than a single `.exe` on purpose: a single‑file build has to unpack ~30 MB to a temp directory (and get rescanned by your antivirus) on every launch, which makes startup very slow.
 
 > Windows SmartScreen may warn about an unsigned executable the first time — choose *More info → Run anyway*.
 
