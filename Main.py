@@ -1,17 +1,17 @@
-import importlib, traceback
-import Economic
-import tkinter as tk
-from tkinter import ttk
-import threading, queue
-from tkinter import scrolledtext, filedialog, Tk
-from functools import partial
+import importlib
+import queue
 import sys
+import threading
+import traceback
 from datetime import datetime
-from PIL import Image, ImageTk
+
+import tkinter as tk
+from tkinter import ttk, scrolledtext, filedialog
+
+import Economic
 
 
 result_queue = queue.Queue()  # Create a queue to store function results
-gui_queue = queue.Queue()
 
 gui_queue = Economic.set_gui_queue()
 input_request_queue = Economic.create_request_queue()
@@ -22,11 +22,6 @@ execution_lock = threading.Lock()  # The lock to ensure single function executio
 
 Economic.input_request_queue = input_request_queue
 Economic.input_response_queue = input_response_queue
-directory_to_work_with =""
-
-# Example imports. Replace these with your actual modules and function names.
-# import app1
-# import app2
 
 def append_to_text_box(text):
     """Append text to the text box and scroll to the end."""
@@ -130,21 +125,21 @@ def check_queue_update_ui():
 
         if request['label'] == 'ask_for_directory':
             try:
-                directory = tk.filedialog.askdirectory()
+                directory = filedialog.askdirectory()
                 request['response'].put(directory)
             except Exception as e:
                 request['response'].put(e)  # Send the exception back if necessary
                 append_to_text_box(str(e) + '\n')
         elif request['label'] == 'ask_for_file':
             try:
-                directory = tk.filedialog.askopenfilename()
+                directory = filedialog.askopenfilename()
                 request['response'].put(directory)
             except Exception as e:
                 request['response'].put(e)  # Send the exception back if necessary
                 append_to_text_box(str(e) + '\n')
         elif request['label'] == 'ask_to_open_file':
             try:
-                directory = tk.filedialog.askopenfile()
+                directory = filedialog.askopenfile()
                 request['response'].put(directory)
             except Exception as e:
                 request['response'].put(e)  # Send the exception back if necessary
@@ -168,29 +163,19 @@ def check_queue_update_ui():
             progressbar.step(value*100)
             request['response'].put(True)
             
-    root.after(1000, check_queue_update_ui)  # Check every second TODO: hcek om dette er rigtigt
+    root.after(1000, check_queue_update_ui)  # Check every second
 
-    
+
 def execute():
     user_input = input_field.get()
     input_response_queue.put(user_input)  # Place the user's input into the input_response_queue
-    #try:
-        #output = eval(user_input)
-        #append_to_text_box(str(user_input) + '\n' + str(output) + '\n')
-    #except Exception as e:
-        #append_to_text_box(str(e) + '\n')
     input_field.delete(0, tk.END)
-    
+
+
 def execute_func_with_logging(func, btn):
     btn.config(bg="yellow")
     append_to_text_box(f"{datetime.now()}: Executing {func.__name__}\n")
-    result = execute_func(func)
-    #if result is True:
-    #    btn.config(bg="green")
-    #    append_to_text_box(f"{datetime.now()}: Success\n")
-    #else:
-    #    btn.config(bg="red")
-    #    append_to_text_box(f"{datetime.now()}: Failed\n")
+    execute_func(func)
 
 root = tk.Tk()
 root.title('Revolut to Economic')
